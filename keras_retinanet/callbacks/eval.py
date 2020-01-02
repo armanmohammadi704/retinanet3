@@ -60,7 +60,7 @@ class Evaluate(keras.callbacks.Callback):
         logs = logs or {}
 
         # run evaluation
-        average_precisions, _ = evaluate(
+        average_precisions = evaluate(
             self.generator,
             self.model,
             iou_threshold=self.iou_threshold,
@@ -72,7 +72,7 @@ class Evaluate(keras.callbacks.Callback):
         # compute per class average precision
         total_instances = []
         precisions = []
-        for label, (average_precision, num_annotations) in average_precisions.items():
+        for label, (average_precision, num_annotations ) in average_precisions.items():
             if self.verbose == 1:
                 print('{:.0f} instances of class'.format(num_annotations),
                       self.generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
@@ -83,14 +83,13 @@ class Evaluate(keras.callbacks.Callback):
         else:
             self.mean_ap = sum(precisions) / sum(x > 0 for x in total_instances)
 
-        if self.tensorboard:
+        if self.tensorboard is not None and self.tensorboard.writer is not None:
             import tensorflow as tf
-            if tf.version.VERSION < '2.0.0' and self.tensorboard.writer:
-                summary = tf.Summary()
-                summary_value = summary.value.add()
-                summary_value.simple_value = self.mean_ap
-                summary_value.tag = "mAP"
-                self.tensorboard.writer.add_summary(summary, epoch)
+            summary = tf.Summary()
+            summary_value = summary.value.add()
+            summary_value.simple_value = self.mean_ap
+            summary_value.tag = "mAP"
+            self.tensorboard.writer.add_summary(summary, epoch)
 
         logs['mAP'] = self.mean_ap
 

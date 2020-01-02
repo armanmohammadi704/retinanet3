@@ -59,7 +59,7 @@ def draw_boxes(image, boxes, color, thickness=2):
         draw_box(image, b, color, thickness=thickness)
 
 
-def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None, score_threshold=0.5):
+def draw_detections(image, boxes, scores, labels, color=(255,30,30), label_to_name=None, score_threshold=0.5):
     """ Draws detections in an image.
 
     # Arguments
@@ -82,7 +82,7 @@ def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None
         draw_caption(image, boxes[i, :], caption)
 
 
-def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
+def draw_annotations(image, annotations, color=(255, 0, 0), label_to_name=None):
     """ Draws annotations in an image.
 
     # Arguments
@@ -101,6 +101,6 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
     for i in range(annotations['bboxes'].shape[0]):
         label   = annotations['labels'][i]
         c       = color if color is not None else label_color(label)
-        caption = '{}'.format(label_to_name(label) if label_to_name else label)
-        draw_caption(image, annotations['bboxes'][i], caption)
+        #caption = '{}'.format(label_to_name(label) if label_to_name else label)
+        #draw_caption(image, annotations['bboxes'][i], caption)
         draw_box(image, annotations['bboxes'][i], color=c)

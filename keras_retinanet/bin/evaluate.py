@@ -18,6 +18,9 @@ import argparse
 import os
 import sys
 
+import keras
+import tensorflow as tf
+
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -30,9 +33,15 @@ from ..preprocessing.csv_generator import CSVGenerator
 from ..preprocessing.pascal_voc import PascalVocGenerator
 from ..utils.config import read_config_file, parse_anchor_parameters
 from ..utils.eval import evaluate
-from ..utils.gpu import setup_gpu
 from ..utils.keras_version import check_keras_version
-from ..utils.tf_version import check_tf_version
+
+
+def get_session():
+    """ Construct a modified tf session.
+    """
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    return tf.Session(config=config)
 
 
 def create_generator(args):
@@ -47,8 +56,7 @@ def create_generator(args):
             'val2017',
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
-            config=args.config,
-            shuffle_groups=False,
+            config=args.config
         )
     elif args.dataset_type == 'pascal':
         validation_generator = PascalVocGenerator(
@@ -56,8 +64,7 @@ def create_generator(args):
             'test',
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
-            config=args.config,
-            shuffle_groups=False,
+            config=args.config
         )
     elif args.dataset_type == 'csv':
         validation_generator = CSVGenerator(
@@ -65,8 +72,7 @@ def create_generator(args):
             args.classes,
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
-            config=args.config,
-            shuffle_groups=False,
+            config=args.config
         )
     else:
         raise ValueError('Invalid data type received: {}'.format(args.dataset_type))
@@ -112,13 +118,13 @@ def main(args=None):
         args = sys.argv[1:]
     args = parse_args(args)
 
-    # make sure keras and tensorflow are the minimum required version
+    # make sure keras is the minimum required version
     check_keras_version()
-    check_tf_version()
 
     # optionally choose specific GPU
     if args.gpu:
-        setup_gpu(args.gpu)
+        os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    keras.backend.tensorflow_backend.set_session(get_session())
 
     # make save path if it doesn't exist
     if args.save_path is not None and not os.path.exists(args.save_path):
@@ -152,7 +158,7 @@ def main(args=None):
         from ..utils.coco_eval import evaluate_coco
         evaluate_coco(generator, model, args.score_threshold)
     else:
-        average_precisions, inference_time = evaluate(
+        average_precisions = evaluate(
             generator,
             model,
             iou_threshold=args.iou_threshold,
@@ -173,8 +179,6 @@ def main(args=None):
         if sum(total_instances) == 0:
             print('No test instances found.')
             return
-
-        print('Inference time for {:.0f} images: {:.4f}'.format(generator.size(), inference_time))
 
         print('mAP using the weighted average of precisions among classes: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
         print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))

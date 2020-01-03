@@ -376,7 +376,7 @@ def evaluate(
     print("\033[03;01;39m \n","F1 score>iou_threshold: ",(2*((precision_allx*recallx)/(precision_allx+recallx))))
     print("\033[03;31;34m \n","Number of Annotations: ",average_precisions[label][1])
     print("\033[03;01;39m \n","----------------------------")
-    if svae_log is not False:
+    if save_log is not False:
         try:
             os.mkdir('Results/')
         except:

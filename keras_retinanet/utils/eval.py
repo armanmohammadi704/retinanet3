@@ -141,7 +141,8 @@ def evaluate(
     iou_threshold=0.5,
     score_threshold=0.05,
     max_detections=100,
-    save_path=None
+    save_path=None,
+    save_log=False
 ):
     """ Evaluate a given dataset using a given model.
     # Arguments
@@ -375,6 +376,11 @@ def evaluate(
     print("\033[03;01;39m \n","F1 score>iou_threshold: ",(2*((precision_allx*recallx)/(precision_allx+recallx))))
     print("\033[03;31;34m \n","Number of Annotations: ",average_precisions[label][1])
     print("\033[03;01;39m \n","----------------------------")
-  
+    if svae_log is not False:
+        try:
+            os.mkdir('Results/')
+        except:
+            pass
+        np.savetxt('Results/{}.txt'.format(save_log),[save_log,true_positives1x,false_positives1x,false_negatives1x,average_precisions[label][0],recallx,accuracyx,precision_allx,(2*((precision_allx*recallx)/(precision_allx+recallx)))])
     return average_precisions
 # Editted by Mohammad Rahimzadeh (mr7495@yahoo.com)

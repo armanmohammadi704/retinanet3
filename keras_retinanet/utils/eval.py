@@ -336,8 +336,14 @@ def evaluate(
     else:
         false_negatives1 = int(max(np.cumsum(false_negatives)))
         false_negatives = np.cumsum(false_negatives)
-    false_positives1 = int(max(false_positives))
-    true_positives1 = int(max(true_positives))
+    try:
+        false_positives1 = int(max(false_positives))
+    except:
+        false_positives1=0
+    try:
+        true_positives1 = int(max(true_positives))
+    except:
+        true_positives1=0
     false_positivesx = np.cumsum(false_positivesx)
     true_positivesx  = np.cumsum(true_positivesx)
     if len(false_negativesx) == 0:
@@ -345,8 +351,14 @@ def evaluate(
     else:
         false_negatives1x = int(max(np.cumsum(false_negativesx)))
         false_negativesx = np.cumsum(false_negativesx)
-    false_positives1x = int(max(false_positivesx))
-    true_positives1x = int(max(true_positivesx))
+    try:
+        false_positives1x = int(max(false_positivesx))
+    except:
+        false_positives1x=0
+    try:
+        true_positives1x = int(max(true_positivesx))
+    except:
+        pass
     """
     print("\033[03;28;88m \n","----------------------------")
     print("\033[03;01;39m\n","All of Validation Images:")

@@ -275,8 +275,14 @@ def evaluate(
                 
             false_positives_i = np.cumsum(false_positives_i)
             true_positives_i  = np.cumsum(true_positives_i)
-            false_positives1_i = int(max(false_positives_i))
-            true_positives1_i = int(max(true_positives_i))
+            try:
+                false_positives1_i = int(max(false_positives_i))
+            except:
+                false_positives1_i=0
+            try:
+                 true_positives1_i = int(max(true_positives_i))
+            except:
+                pass
             false_positives_ix = np.cumsum(false_positives_ix)
             true_positives_ix  = np.cumsum(true_positives_ix)
             try:
@@ -287,6 +293,8 @@ def evaluate(
                 true_positives1_ix = int(max(true_positives_ix))
             except:
                 true_positives1_ix=0
+            false_positives1_ix = int(max(false_positives_ix))
+            true_positives1_ix = int(max(true_positives_ix))
             print("\033[1;31;34m \n","----------------------------")
             print("\033[3;28;88m\n",generator.image_path(i)[5:(len(generator.image_path(i))-4)],": ")
             """

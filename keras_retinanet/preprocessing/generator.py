@@ -81,7 +81,7 @@ class Generator(keras.utils.Sequence):
         self.config                 = config
 
         # Define groups
-        self.group_images()
+        #self.group_images()
 
         # Shuffle when initializing
         if self.shuffle_groups:

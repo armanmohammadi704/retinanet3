@@ -204,13 +204,7 @@ class CSVGenerator(Generator):
     def load_image(self, image_index):
         """ Load an image at the image_index.
         """
-
-        img=np.load(self.image_path(image_index))
-        y=np.zeros((25*576,768,3),dtype=np.uint8)
-        for i in range(1,26):
-            y[576*(i-1):576*i,:,:]=img[:,:,3*(i-1):3*i]
-        final=y.copy()
-        return final
+        return read_image_bgr(self.image_path(image_index))
 
     def load_annotations(self, image_index):
         """ Load annotations for an image_index.

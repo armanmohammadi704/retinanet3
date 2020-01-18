@@ -44,8 +44,8 @@ class Generator(keras.utils.Sequence):
         self,
         transform_generator = None,
         batch_size=1,
-        group_method='random',  # one of 'none', 'random', 'ratio'
-        shuffle_groups=True,
+        group_method='none',  # one of 'none', 'random', 'ratio'
+        shuffle_groups=False,
         image_min_side=800,
         image_max_side=1333,
         transform_parameters=None,
@@ -81,7 +81,7 @@ class Generator(keras.utils.Sequence):
         self.config                 = config
 
         # Define groups
-        #self.group_images()
+        self.group_images()
 
         # Shuffle when initializing
         #if self.shuffle_groups:

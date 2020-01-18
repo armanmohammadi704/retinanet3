@@ -254,7 +254,7 @@ class Generator(keras.utils.Sequence):
 
         # divide into groups, one group = one batch
         self.groups = [[order[x % len(order)] for x in range(i, i + self.batch_size)] for i in range(0, len(order), self.batch_size)]
-
+        print(self.groups)
     def compute_inputs(self, image_group):
         """ Compute inputs for the network using an image_group.
         """

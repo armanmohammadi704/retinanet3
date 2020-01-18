@@ -254,7 +254,7 @@ def evaluate(
         average_precisions[label] = average_precision, num_annotations
 
         # inference time
-        inference_time = np.sum(all_inferences) / generator.size()
+        #inference_time = np.sum(all_inferences) / generator.size()
         print(label,' :','Recall:',float(max(recall)),'   ','F1:',F1)
         print(num_annotations)
-    return average_precisions, inference_time
+    return average_precisions

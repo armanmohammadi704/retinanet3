@@ -500,8 +500,7 @@ def main(args=None):
         verbose=1,
         callbacks=callbacks,
         workers=args.workers,
-        use_multiprocessing=use_multiprocessing,
-        max_queue_size=args.max_queue_size
+        use_multiprocessing=use_multiprocessing
     )
 
 

@@ -319,12 +319,12 @@ class Generator(keras.utils.Sequence):
 
         return inputs, targets
 
-    #def __len__(self):
+    def __len__(self):
         """
         Number of batches for generator.
         """
 
-       #return len(self.groups)
+       return len(self.groups)
 
     def __getitem__(self, index):
         """

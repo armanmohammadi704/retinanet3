@@ -496,7 +496,11 @@ def main(args=None):
     training_model.fit_generator(
         generator=train_generator,
         steps_per_epoch=args.steps,
-        epochs=args.epochs
+        epochs=args.epochs,
+        callbacks=callbacks,
+        workers=args.workers,
+        use_multiprocessing=use_multiprocessing,
+        max_queue_size=args.max_queue_size
     )
 
 

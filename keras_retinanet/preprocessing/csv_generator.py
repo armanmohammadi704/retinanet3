@@ -223,11 +223,5 @@ class CSVGenerator(Generator):
                 float(annot['x2']),
                 float(annot['y2']),
             ]]))
-        r=len(annotations['labels'])%25
-        if r!=0:
-            annotations['labels']=annotations['labels'][:-r]
-            annotations['bboxes']=annotations['bboxes'][:-r]
-        d1=int(len(annotations['labels'])/25)
-        annotations['bboxes']=annotations['bboxes'].reshape(d1,4,25)
-        annotations['labels']=annotations['labels'].reshape(d1,25)
+
         return annotations

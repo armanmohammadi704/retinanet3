@@ -50,7 +50,7 @@ def _compute_ap(recall, precision):
     return ap
 
 
-def _get_detections(generator, model, score_threshold=0.05, max_detections=100, save_path=None):
+def _get_detections(generator, model, score_threshold=0.5, max_detections=3000, save_path=None):
     """ Get the detections from the model using the generator.
     The result is a list of lists such that the size is:
         all_detections[num_images][num_classes] = detections[num_detections, 4 + num_classes]
@@ -139,8 +139,8 @@ def evaluate(
     generator,
     model,
     iou_threshold=0.5,
-    score_threshold=0.05,
-    max_detections=100,
+    score_threshold=0.5,
+    max_detections=3000,
     save_path=None,
     save_log=False
 ):
@@ -158,7 +158,7 @@ def evaluate(
     # gather all detections and annotations
     all_detections     = _get_detections(generator, model, score_threshold=score_threshold, max_detections=max_detections)
     all_annotations    = _get_annotations(generator)
-    all_detections1= _get_detections(generator, model, score_threshold=0.5, max_detections=max_detections)
+    #all_detections1= _get_detections(generator, model, score_threshold=0.5, max_detections=max_detections)
     average_precisions = {}
     if save_path is None:
         try:
@@ -195,221 +195,65 @@ def evaluate(
 
         for i in range(generator.size()):
             detections           = all_detections[i][label]
-            detections1          = all_detections1[i][label]
+            #detections1          = all_detections1[i][label]
             annotations          = all_annotations[i][label]
             num_annotations     += annotations.shape[0]
             detected_annotations = []
             detected_annotations1 = []
-            image1 = generator.load_image(i)[:,:,3].astype(np.uint8)
-            image1 = cv2.cvtColor(image1,cv2.COLOR_GRAY2BGR)
-            draw_annotations(image1, generator.load_annotations(i))
+            #image1 = generator.load_image(i)[:,:,3].astype(np.uint8)
+            #image1 = cv2.cvtColor(image1,cv2.COLOR_GRAY2BGR)
+            #draw_annotations(image1, generator.load_annotations(i))
 
 
             for d in detections:
-                scores = np.append(scores, d[4])
                 image_boxes1 = d
                 image_scores1 = d[4]
+                scores = np.append(scores, d[4])
 
                 if annotations.shape[0] == 0:
                     false_positives = np.append(false_positives, 1)
-                    false_positives_i = np.append(false_positives, 1)
                     true_positives  = np.append(true_positives, 0)
-                    true_positives_i  = np.append(true_positives, 0)
                     continue
- 
 
                 overlaps            = compute_overlap(np.expand_dims(d, axis=0), annotations)
                 assigned_annotation = np.argmax(overlaps, axis=1)
                 max_overlap         = overlaps[0, assigned_annotation]
-            
+
                 if max_overlap >= iou_threshold and assigned_annotation not in detected_annotations:
                     false_positives = np.append(false_positives, 0)
-                    false_positives_i = np.append(false_positives_i, 0)
                     true_positives  = np.append(true_positives, 1)
-                    true_positives_i  = np.append(true_positives_i, 1)
                     detected_annotations.append(assigned_annotation)
-                    if image_scores1 >= iou_threshold :
-                        false_positivesx = np.append(false_positivesx, 0)
-                        false_positives_ix = np.append(false_positives_ix, 0)
-                        true_positivesx  = np.append(true_positivesx, 1)
-                        true_positives_ix  = np.append(true_positives_ix, 1)
-                        draw_box(image1,image_boxes1,color=(0,255,0))
-                        draw_caption(image1,image_boxes1,'TP:'+str(round(image_scores1,2)))
-                        detected_annotations1.append(assigned_annotation)
 
                 else:
-                    false_positives = np.append(false_positives, 1)
-                    false_positives_i = np.append(false_positives_i, 1)
-                    true_positives  = np.append(true_positives, 0)
-                    true_positives_i  = np.append(true_positives_i, 0)
                     if image_scores1 >= iou_threshold :
-                        false_positivesx = np.append(false_positivesx, 1)
-                        false_positives_ix = np.append(false_positives_ix, 1)
-                        true_positivesx  = np.append(true_positivesx, 0)
-                        true_positives_ix  = np.append(true_positives_ix, 0)
-                        draw_box(image1,image_boxes1,color=(0,0,255))
-                        draw_caption(image1,image_boxes1,'FP:'+str(round(image_scores1,2)))
-            anno = annotations.tolist()   
-            for a in anno:
-                if anno.index(a) not in detected_annotations:
-                    false_negatives = np.append(false_negatives, 1)
-                    false_negatives_i = np.append(false_negatives_i, 1)
-                    
-            for a in anno:
-                if anno.index(a) not in detected_annotations1:
-                    image_boxes3=a
-                    draw_box(image1,image_boxes3,color=(120,0,120))
-                    draw_caption(image1,image_boxes3,'FN')
-                    false_negativesx = np.append(false_negativesx, 1)
-                    false_negatives_ix = np.append(false_negatives_ix, 1)
-                    
-            if len(false_negatives_i) == 0:
-                false_negatives1_i = 0
-            else:
-                false_negatives1_i = int(max(np.cumsum(false_negatives_i)))
-                
-            if len(false_negatives_ix) == 0:
-                false_negatives1_ix = 0
-            else:
-                false_negatives1_ix = int(max(np.cumsum(false_negatives_ix)))
-                
-            false_positives_i = np.cumsum(false_positives_i)
-            true_positives_i  = np.cumsum(true_positives_i)
-            try:
-                false_positives1_i = int(max(false_positives_i))
-            except:
-                false_positives1_i=0
-            try:
-                 true_positives1_i = int(max(true_positives_i))
-            except:
-                pass
-            false_positives_ix = np.cumsum(false_positives_ix)
-            true_positives_ix  = np.cumsum(true_positives_ix)
-            try:
-                false_positives1_ix = int(max(false_positives_ix))
-            except:
-                false_positives1_ix=0
-            try:
-                true_positives1_ix = int(max(true_positives_ix))
-            except:
-                true_positives1_ix=0
+                        false_positives = np.append(false_positives, 1)
+                        true_positives  = np.append(true_positives, 0)
 
-            print("\033[1;31;34m \n","----------------------------")
-            print("\033[3;28;88m\n",generator.image_path(i)[5:(len(generator.image_path(i))-4)],": ")
-            """
-            print("\033[1;31;32m True Positives : \n",true_positives1_i)
-            print("\033[1;31;38m False Positives : \n",false_positives1_i)
-            print("\033[1;31;35m False Negatives : \n",false_negatives1_i)
-            print("\033[1;31;34m \n","----------------------------")
-            print("\033[3;28;88m\n",generator.image_path(i)[5:(len(generator.image_path(i))-4)],": ")
-            """
-            print("\033[1;31;32m True Positives>iou_threshold : \n",true_positives1_ix)
-            print("\033[1;31;38m False Positives>iou_threshold : \n",false_positives1_ix)
-            print("\033[1;31;35m False Negatives>iou_threshold : \n",false_negatives1_ix)
-            TP = true_positives1_ix
-            FP = false_positives1_ix
-            FN = false_negatives1_ix
-            false_positives_i = np.zeros((0,))
-            true_positives_i  = np.zeros((0,))
-            false_negatives_i = np.zeros((0,))
-            false_positives_ix = np.zeros((0,))
-            true_positives_ix  = np.zeros((0,))
-            false_negatives_ix = np.zeros((0,))
-            cv2.imwrite(os.path.join(save_path, '{}.bmp'.format(generator.image_path(i)[5:(len(generator.image_path(i))-4)]+" TP :"+str(TP)+" FP :"+str(FP)+" FN :"+str(FN))), image1) 
+
 
         # no annotations -> AP for this class is 0 (is this correct?)
         if num_annotations == 0:
             average_precisions[label] = 0, 0
             continue
 
-    # sort by score
-        
-    indices         = np.argsort(-scores)
-    false_positives = false_positives[indices]
-    true_positives  = true_positives[indices]
-        
-    # compute false positives and true positives
-    false_positives = np.cumsum(false_positives)
-    true_positives  = np.cumsum(true_positives)
-    if len(false_negatives) == 0:
-        false_negatives1 = 0
-    else:
-        false_negatives1 = int(max(np.cumsum(false_negatives)))
-        false_negatives = np.cumsum(false_negatives)
-    try:
-        false_positives1 = int(max(false_positives))
-    except:
-        false_positives1=0
-    try:
-        true_positives1 = int(max(true_positives))
-    except:
-        true_positives1=0
-    false_positivesx = np.cumsum(false_positivesx)
-    true_positivesx  = np.cumsum(true_positivesx)
-    if len(false_negativesx) == 0:
-        false_negatives1x = 0
-    else:
-        false_negatives1x = int(max(np.cumsum(false_negativesx)))
-        false_negativesx = np.cumsum(false_negativesx)
-    try:
-        false_positives1x = int(max(false_positivesx))
-    except:
-        false_positives1x=0
-    try:
-        true_positives1x = int(max(true_positivesx))
-    except:
-        pass
-    """
-    print("\033[03;28;88m \n","----------------------------")
-    print("\033[03;01;39m\n","All of Validation Images:")
-    print("\033[1;31;32m True Positives : \n",true_positives1)
-    print("\033[1;31;38m False Positives : \n",false_positives1)
-    print("\033[1;31;35m False Negatives : \n",false_negatives1)
-    """
-    print("\033[03;28;88m \n","----------------------------")
-    print("\033[03;01;39m\n","All of Validation Images:")
-    print("\033[1;31;32m True Positives>iou_threshold : \n",true_positives1x)
-    print("\033[1;31;38m False Positives>iou_threshold : \n",false_positives1x)
-    print("\033[1;31;35m False Negatives>iou_threshold : \n",false_negatives1x)
-   
-    # compute recall and precision
-    recall    = true_positives / num_annotations
-    recallx    = max(true_positivesx) / num_annotations
-    precision = true_positives / np.maximum(true_positives + false_positives, np.finfo(np.float64).eps)
-    precision_allx = max(true_positivesx) / (max(true_positivesx + false_positivesx))
-    precision_all = max(true_positives) / (max(true_positives + false_positives))
-    # compute average precision
-    average_precision  = _compute_ap(recall, precision)
-    average_precisions[label] = average_precision, num_annotations
-    accuracy = max(true_positives) / (max(true_positives + false_positives + max(false_negatives)))
-    accuracyx = max(true_positivesx) / (max(true_positivesx + false_positivesx + max(false_negativesx)))
-    print("\033[03;01;39m \n","----------------------------")
-    """
-    print("\033[03;01;39m \n","Validation accuracy: ")
-    print("\033[03;01;39m \n","recall: ",max(recall))
-    print("\033[03;31;39m \n","average_precisions: ",average_precisions[label][0])
-    print("\033[03;01;39m \n","F1 score: ",(2*((precision_all*max(recall))/(precision_all+max(recall)))))
-    print("\033[03;31;39m \n","Accuracy: ",accuracy) 
-    print("\033[03;31;39m \n","Precision: ",precision_all)
-    print("\033[03;31;34m \n","Number of Annotations: ",average_precisions[label][1])
-    """
-    print("\033[03;01;39m \n","Validation accuracy: ")
-    print("\033[03;31;39m \n","average_precisions: ",average_precisions[label][0])
-    print("\033[03;01;39m \n","recall>iou_threshold: ",recallx)
-    print("\033[03;31;39m \n","Accuracy>iou_threshold: ",accuracyx) 
-    print("\033[03;31;39m \n","Precision>iou_threshold: ",precision_allx)
-    print("\033[03;01;39m \n","F1 score>iou_threshold: ",(2*((precision_allx*recallx)/(precision_allx+recallx))))
-    print("\033[03;31;34m \n","Number of Annotations: ",average_precisions[label][1])
-    print("\033[03;01;39m \n","----------------------------")
-    if save_log is not False:
-        try:
-            os.mkdir('Results/')
-        except:
-            pass
-        f1=2*((precision_allx*recallx)/(precision_allx+recallx))
-        p=np.array([int(save_log[:-3]),true_positives1x,false_positives1x,false_negatives1x,np.float(average_precisions[label][0]),np.float(recallx),np.float(accuracyx),np.float(precision_allx),np.float(f1)])
-        #name='Results/{}.txt'.format(save_log[:-3])
-        #np.savetxt(name,p)
-        return(p)
-    return average_precisions
-# Editted by Mohammad Rahimzadeh (mr7495@yahoo.com)
+        # sort by score
+        indices         = np.argsort(-scores)
+        false_positives = false_positives[indices]
+        true_positives  = true_positives[indices]
+
+        # compute false positives and true positives
+        false_positives = np.cumsum(false_positives)
+        true_positives  = np.cumsum(true_positives)
+
+        # compute recall and precision
+        recall    = true_positives / num_annotations
+        precision = true_positives / np.maximum(true_positives + false_positives, np.finfo(np.float64).eps)
+        F1 = (2*float(max(recall))*float(max(precision))/(float(max(recall))+float(max(precision))))
+        # compute average precision
+        average_precision  = _compute_ap(recall, precision)
+        average_precisions[label] = average_precision, num_annotations
+
+        # inference time
+        inference_time = np.sum(all_inferences) / generator.size()
+        print(label,' :','Recall:',float(max(recall)),'   ','F1:',F1)
+    return average_precisions, inference_time

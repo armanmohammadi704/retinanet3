@@ -237,9 +237,9 @@ def evaluate(
             continue
 
         # sort by score
-        #indices         = np.argsort(-scores)
-        #false_positives = false_positives[indices]
-        #true_positives  = true_positives[indices]
+        indices         = np.argsort(-scores)
+        false_positives = false_positives[indices]
+        true_positives  = true_positives[indices]
 
         # compute false positives and true positives
         false_positives = np.cumsum(false_positives)

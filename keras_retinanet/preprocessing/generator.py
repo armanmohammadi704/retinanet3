@@ -84,8 +84,8 @@ class Generator(keras.utils.Sequence):
         self.group_images()
 
         # Shuffle when initializing
-        #if self.shuffle_groups:
-            #self.on_epoch_end()
+        if self.shuffle_groups:
+            self.on_epoch_end()
 
     def on_epoch_end(self):
         if self.shuffle_groups:
